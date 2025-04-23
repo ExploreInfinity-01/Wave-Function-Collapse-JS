@@ -1,3 +1,4 @@
+import { updateLoadingScreen } from './utils.js';
 import WaveFunctionCollapser from './wfc.js';
 
 export default class ImageGrid {
@@ -8,20 +9,13 @@ export default class ImageGrid {
         this.image = new Image();
         this.image.src = src;
 
-        const centerX = this.canvas.width * 0.5;
-        const centerY = this.canvas.height * 0.5;
-        const { width, height } = this.canvas;
-        context.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        context.fillRect(0, 0, width, height);
-        context.font = `40px monospace`;
-        context.fillStyle = 'rgb(255, 255, 255)';
-        context.fillText('Loading...', centerX, centerY);
+        updateLoadingScreen(context);
 
         this.#addOptions();
 
         // Tile Extraction
         this.image.onload = async () => {
-            await this.image.extractTilesWorker(tileSize);
+            await this.image.extractTilesWorker(context, tileSize);
             
             // Tiles Extracted
             this.createTileAdjacencies();
@@ -38,6 +32,7 @@ export default class ImageGrid {
         const { width, height } = this.canvas;
 
         const controller = new AbortController();
+        this.controller = controller;
         this.abort = () => controller.abort();
 
         let showGenImage = true;
@@ -104,8 +99,7 @@ export default class ImageGrid {
     }
 
     intializeCollapser() {
-        this.wfc = new WaveFunctionCollapser(this.context, this, 25, 20);
-        console.time('Generation');
+        this.wfc = new WaveFunctionCollapser(this.context, this, this.controller, 25, 20);
         this.wfc.init();
     }
 

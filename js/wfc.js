@@ -3,9 +3,10 @@ import { dir } from "./tile.js";
 import { random } from "./utils.js";
 
 export default class WaveFunctionCollapser {
-    constructor(context, imageGrid, pixelSize, maxDepth=10) {
+    constructor(context, imageGrid, controller, pixelSize, maxDepth=10) {
         this.canvas = context.canvas;
         this.context = context;
+        this.controller = controller;
         this.imageGrid = imageGrid;
         this.pixelSize = pixelSize;
         this.rows = Math.floor(this.canvas.height / pixelSize);
@@ -85,6 +86,7 @@ export default class WaveFunctionCollapser {
             if(leastEntropyCells.length === 0) {
                 console.timeEnd('Generation');
                 this.finished = true;
+                this.drawFinalImage();
                 console.log('Finished!');
                 return
             }
@@ -120,10 +122,12 @@ export default class WaveFunctionCollapser {
             return
         }
         // Collapse Cell with one option left
-        for(const cell of this.grid) {
+        for(const cellIndex of this.currentHistory.entropyCheckedCells) {
+            const cell = this.grid[cellIndex];
             if(!cell.collapsed && cell.cellOptions.size === 1) {
                 cell.collapsed = true;
                 cell.optionIndex = [...cell.cellOptions][0];
+                this.reduceEntropy(cell); // It is important, check 'chessboard' image with and without this!
             }
         }
     }
@@ -153,7 +157,6 @@ export default class WaveFunctionCollapser {
     reduceEntropy(cell, depth=0) {
         if(depth > this.maxDepth) return;
         cell.entropyChecked = true;
-        // console.time('Propagate' + cell.index);
 
         const cellIndex = cell.index;
         const i = cellIndex % this.cols;
@@ -193,10 +196,10 @@ export default class WaveFunctionCollapser {
         propagate(i-1, j, dir.LEFT);
         propagate(i, j-1, dir.TOP);
         propagate(i, j+1, dir.BOTTOM);
-        // console.timeEnd('Propagate' + cell.index);
     }
 
     init() {
+        console.time('Generation');
         this.animate();
     }
 
@@ -205,7 +208,6 @@ export default class WaveFunctionCollapser {
             cell.drawFinalPixel(this.context);
         }
     }
-
 
     refreshImage() {
         for(const cell of this.grid) {
@@ -222,6 +224,11 @@ export default class WaveFunctionCollapser {
         if(!this.finished) {
             this.wfc();
             requestAnimationFrame(() => this.animate());
+            // window.addEventListener('keydown', e => {
+            //     if(e.key === ' ') {
+            //         requestAnimationFrame(() => this.animate());
+            //     }
+            // }, { once: true, signal: this.controller.signal });
         }
     }
 }

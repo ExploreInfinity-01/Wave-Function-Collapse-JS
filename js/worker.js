@@ -3,21 +3,6 @@ onmessage = e => {
     const tilePixelArrayLen = size * size * 4;
     const tiles = [];
 
-    const checkIfSame = (tilePixels) => {
-        for(const pixels of tiles) {
-            let same = true;
-            for(let i = 0; i < pixels.length; i++) {
-                if(pixels[i] !== tilePixels[i]) {
-                    same = false;
-                    break
-                }
-            }
-
-            if(same) return true;
-        }
-        return false
-    }
-
     for(let j = 0; j < height; j++) {
         for(let i = 0; i < width; i++) {
             const tilePixels = new Uint8ClampedArray(tilePixelArrayLen);
@@ -31,7 +16,7 @@ onmessage = e => {
                     tilePixels[tileIndex+3] = pixels[srcIndex+3];
                 }
             }
-            // if(!checkIfSame(tilePixels)) tiles.push(tilePixels);
+
             tiles.push(tilePixels);
         }
     }

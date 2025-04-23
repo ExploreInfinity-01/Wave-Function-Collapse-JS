@@ -1,5 +1,5 @@
 import Tile from "./tile.js";
-import { rgba } from "./utils.js";
+import { rgba, updateLoadingScreen } from "./utils.js";
 
 Image.prototype.setEmptyPixelData = function() {
     this.pixels = new Uint8ClampedArray(this.width * this.height * 4);
@@ -95,9 +95,10 @@ Image.prototype.extractTiles = function(size=3) {
     this.tilesExtracted = true;
 }
 
-Image.prototype.extractTilesWorker = async function(size=3, event=new Event('tileExtracted')) {
+Image.prototype.extractTilesWorker = async function(context, size=3, event=new Event('tileExtracted')) {
     if(!this.pixelLoaded) this.loadPixels();
     this.tileSize = size;
+
     const workerPromise = new Promise((resolve, reject) => {
         const worker = new Worker('./js/worker.js');
 
@@ -136,15 +137,12 @@ Image.prototype.extractTilesWorker = async function(size=3, event=new Event('til
             for(const pixels of e.data) {
                 const key = pixels.join('');
                 this.tiles.push(
-                    new Tile(
-                        pixels, size, size, 
+                    new Tile(pixels, size, size, 
                         checkedTiles.has(key) ?  checkedTiles.get(key) : index));
                 
-                if(checkedTiles.has(key)) {
-                    index++;
-                } else {
-                    checkedTiles.set(key, index++);
-                }
+                checkedTiles.has(key)
+                    ? index++ 
+                    : checkedTiles.set(key, index++);
             };
 
             // this.tiles = e.data.map((pixels, i) => new Tile(pixels, size, size, i, 1));
