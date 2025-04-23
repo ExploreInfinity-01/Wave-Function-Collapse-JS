@@ -22,12 +22,20 @@ export default class Tile extends ImageData {
         return this.getPixelAt(this.centerPixelIndex.i, this.centerPixelIndex.j);
     }
 
-    showAdjacencies(context, tiles, tileSize=100, padding=10) {
+    showAdjacencies(context, index, tiles, tileSize=100, padding=10) {
         const { canvas } = context;
         const pixelSize = tileSize / this.width;
         let x = padding;
         let y = padding * 2;
         this.renderImage(context, x, y, pixelSize);
+
+        context.save();
+        context.fillStyle = 'black';
+        context.font = '20px monospace';
+        console.log(x + this.width * 0.5, y + this.height * 1.5);
+        context.fillText(index + 1, x + this.width * 0.5 * pixelSize, y + this.height * 1.25 * pixelSize);
+        context.restore();
+
         for(const tileColumn of this.adjacencies) {
             x += tileSize + padding * 2;
             y = padding * 2;

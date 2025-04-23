@@ -119,7 +119,7 @@ export default class ImageGrid {
     }
 
     showTileAdjacencies(index, tileSize=75, padding=10) {
-        this.tiles[index].showAdjacencies(this.context, this.tiles, tileSize, padding);
+        this.tiles[index].showAdjacencies(this.context, index, this.tiles, tileSize, padding);
     }
 
     createTileAdjacencies() {
