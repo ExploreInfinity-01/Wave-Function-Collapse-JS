@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="wrapContainer">
+        <select name="selectImage" id="selectImage">
+            <option value="sewers">Sewers</option>
+        </select>
+        <div id="main">
+            <canvas id="canvas"></canvas>
+            <div id="controls">
+                <button id="changeView" title="Change View">◩</button>
+                <button id="regenerate" title="Regenerate">
+                    <img src="svgs/refresh.svg" alt="regenerate">
+                </button>
+                <button id="save" title="Save">
+                    <img src="svgs/save2.svg" alt="save">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

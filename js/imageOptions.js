@@ -1,0 +1,70 @@
+const select = document.getElementById('selectImage');
+select.innerHTML = '';
+
+const options = [
+    { name: '3Bricks', fileName: '3Bricks.png' },
+    { name: 'Angular', fileName: 'Angular.png' },
+    { name: 'BrownFox', fileName: 'BrownFox.png' },
+    { name: 'Cat', fileName: 'Cat.png' },
+    { name: 'Cats', fileName: 'Cats.png' },
+    { name: 'Cave', fileName: 'Cave.png' },
+    { name: 'Chess', fileName: 'Chess.png' },
+    { name: 'Circle', fileName: 'Circle.png' },
+    { name: 'City', fileName: 'City.png' },
+    { name: 'ColoredCity', fileName: 'ColoredCity.png' },
+    { name: 'Disk', fileName: 'Disk.png' },
+    { name: 'Dungeon', fileName: 'Dungeon.png' },
+    { name: 'Fabric', fileName: 'Fabric.png' },
+    { name: 'Flowers', fileName: 'Flowers.png' },
+    { name: 'Font', fileName: 'Font.png' },
+    { name: 'Forest', fileName: 'Forest.png' },
+    { name: 'Hogs', fileName: 'Hogs.png' },
+    { name: 'Knot', fileName: 'Knot.png' },
+    { name: 'Lake', fileName: 'Lake.png' },
+    { name: 'LessRooms', fileName: 'LessRooms.png' },
+    { name: 'Lines', fileName: 'Lines.png' },
+    { name: 'Link', fileName: 'Link.png' },
+    { name: 'Link2', fileName: 'Link2.png' },
+    { name: 'MagicOffice', fileName: 'MagicOffice.png' },
+    { name: 'Maze', fileName: 'Maze.png' },
+    { name: 'Mazelike', fileName: 'Mazelike.png' },
+    { name: 'MoreFlowers', fileName: 'MoreFlowers.png' },
+    { name: 'Mountains', fileName: 'Mountains.png' },
+    { name: 'Nested', fileName: 'Nested.png' },
+    { name: 'NotKnot', fileName: 'NotKnot.png' },
+    { name: 'Office', fileName: 'Office.png' },
+    { name: 'Office2', fileName: 'Office2.png' },
+    { name: 'Paths', fileName: 'Paths.png' },
+    { name: 'Platformer', fileName: 'Platformer.png' },
+    { name: 'Qud', fileName: 'Qud.png' },
+    { name: 'RedDot', fileName: 'RedDot.png' },
+    { name: 'RedMaze', fileName: 'RedMaze.png' },
+    { name: 'Rooms', fileName: 'Rooms.png' },
+    { name: 'Rule126', fileName: 'Rule126.png' },
+    { name: 'Sand', fileName: 'Sand.png' },
+    { name: 'ScaledMaze', fileName: 'ScaledMaze.png' },
+    { name: 'Sewers', fileName: 'Sewers.png' },
+    { name: 'SimpleKnot', fileName: 'SimpleKnot.png' },
+    { name: 'SimpleMaze', fileName: 'SimpleMaze.png' },
+    { name: 'SimpleWall', fileName: 'SimpleWall.png' },
+    { name: 'Skew1', fileName: 'Skew1.png' },
+    { name: 'Skew2', fileName: 'Skew2.png' },
+    { name: 'Skyline', fileName: 'Skyline.png' },
+    { name: 'Skyline2', fileName: 'Skyline2.png' },
+    { name: 'SmileCity', fileName: 'SmileCity.png' },
+    { name: 'Spirals', fileName: 'Spirals.png' },
+    { name: 'Town', fileName: 'Town.png' },
+    { name: 'TrickKnot', fileName: 'TrickKnot.png' },
+    { name: 'Village', fileName: 'Village.png' },
+    { name: 'Wall', fileName: 'Wall.png' },
+    { name: 'WalledDot', fileName: 'WalledDot.png' },
+    { name: 'Water', fileName: 'Water.png' },
+    { name: 'Wrinkles', fileName: 'Wrinkles.png' }
+];
+
+for(const { name, fileName } of options) {
+    const option = document.createElement('option');
+    option.textContent = name;
+    option.value = location.pathname + `samples/${fileName}`;
+    select.append(option);
+}
