@@ -43,8 +43,10 @@ export default class ImageGrid {
         let showGenImage = true;
         let showImage = false;
         let showTiles = false;
+        let showAdjacencies = false;
         const changeView = document.getElementById('changeView');
         changeView.addEventListener('click', () => {
+            changeView.blur();
             context.clearRect(0, 0, width, height);
             if(showGenImage) {
                 showGenImage = this.wfc.showProgress = false;
@@ -58,20 +60,36 @@ export default class ImageGrid {
                 showTiles = true;
                 this.setPadding(5);
                 this.showExtractedTiles();
-                // this.showTileAdjacencies(1);
             } else if(showTiles) {
                 showTiles = false;
+                showAdjacencies = true;
+                this.showTileAdjacencies(index);
+            } else if(showAdjacencies) {
+                showAdjacencies = false;
                 showGenImage = this.wfc.showProgress = true;
-                if(this.wfc.finished) {
-                    this.wfc.drawFinalImage();
-                } else {
-                    this.wfc.refreshImage();
-                }
+                this.wfc.finished
+                    ? this.wfc.drawFinalImage()
+                    : this.wfc.refreshImage();
             }
         }, controller);
 
         const regenerateBtn = document.getElementById('regenerate');
         regenerateBtn.addEventListener('click', () => this.wfc.regenerate(), controller);
+
+        let index = 0;
+        const createAdjacenciesViewport = () => {
+            window.addEventListener('keydown', e => {
+                if(!showAdjacencies) return;
+                if(e.key === 'ArrowRight' && index < this.tiles.length - 1) {
+                    index++;
+                } else if(e.key === 'ArrowLeft' && index > 0) {
+                    index--;
+                }
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.showTileAdjacencies(index);
+            }, controller);
+        }
+        createAdjacenciesViewport();
     }
 
     generate() {
