@@ -33,38 +33,41 @@ export default class ImageGrid {
 
         const controller = new AbortController();
         this.controller = controller;
-        this.abort = () => controller.abort();
+        this.abort = () => {
+            this.controller.abort();
+            this.wfc.abort = true;
+        }
 
-        let showGenImage = true;
-        let showImage = false;
-        let showTiles = false;
-        let showAdjacencies = false;
+        let currentView = 0;
+        const totalViews = 4;
         const changeView = document.getElementById('changeView');
         changeView.addEventListener('click', () => {
             changeView.blur();
             context.clearRect(0, 0, width, height);
-            if(showGenImage) {
-                showGenImage = this.wfc.showProgress = false;
-                showImage = true;
-                const pixelScale = Math.min(
-                    this.canvas.width / this.image.width, 
-                    this.canvas.height / this.image.height);
-                this.image.renderImage(context, 0, 0, pixelScale);
-            } else if(showImage) {
-                showImage = false;
-                showTiles = true;
-                this.setPadding(5);
-                this.showExtractedTiles();
-            } else if(showTiles) {
-                showTiles = false;
-                showAdjacencies = true;
-                this.showTileAdjacencies(index);
-            } else if(showAdjacencies) {
-                showAdjacencies = false;
-                showGenImage = this.wfc.showProgress = true;
-                this.wfc.finished
-                    ? this.wfc.drawFinalImage()
-                    : this.wfc.refreshImage();
+
+            currentView = (currentView + 1) % totalViews;
+
+            switch(currentView) {
+                case 0: // Generated Image
+                    this.wfc.showProgress = true;
+                    this.wfc.finished
+                        ? this.wfc.drawFinalImage()
+                        : this.wfc.refreshImage();
+                    break;
+                case 1: // Original Image
+                    this.wfc.showProgress = false;
+                    const pixelScale = Math.min(
+                        this.canvas.width / this.image.width, 
+                        this.canvas.height / this.image.height);
+                    this.image.renderImage(context, 0, 0, pixelScale);
+                    break;
+                case 2: // Tiles extracted from Image
+                    this.setPadding(5);
+                    this.showExtractedTiles();
+                    break;
+                case 3: // Every Tile with their Adjacencies
+                    this.showTileAdjacencies(index);
+                    break;
             }
         }, controller);
 
@@ -74,7 +77,7 @@ export default class ImageGrid {
         let index = 0;
         const createAdjacenciesViewport = () => {
             window.addEventListener('keydown', e => {
-                if(!showAdjacencies) return;
+                if(currentView !== 3) return;
                 if(e.key === 'ArrowRight' && index < this.tiles.length - 1) {
                     index++;
                 } else if(e.key === 'ArrowLeft' && index > 0) {
@@ -87,19 +90,19 @@ export default class ImageGrid {
         createAdjacenciesViewport();
     }
 
-    generate() {
+    generate(pixelSize=25) {
         // When Tiles Loaded
         if(!this.extracted) {
             document.addEventListener('tilesOnLoad', () => {
-                this.intializeCollapser();
+                this.#intializeCollapser(pixelSize);
             }, { once: true });
         } else {
-            this.intializeCollapser();
+            this.#intializeCollapser(pixelSize);
         }
     }
 
-    intializeCollapser() {
-        this.wfc = new WaveFunctionCollapser(this.context, this, this.controller, 25, 20);
+    #intializeCollapser(pixelSize=25) {
+        this.wfc = new WaveFunctionCollapser(this.context, this, this.controller, pixelSize, 20);
         this.wfc.init();
     }
 

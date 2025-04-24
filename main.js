@@ -3,6 +3,8 @@ import './js/imageData.js';
 import './js/imageOptions.js'
 import ImageGrid from './js/imageGrid.js';
 
+export let drawCellOptionsCount = false;
+
 const canvas = document.getElementById('canvas');
 canvas.width = canvas.height = 700;
 const ctx = canvas.getContext('2d');
@@ -12,12 +14,12 @@ ctx.textBaseline = 'middle';
 const select = document.getElementById('selectImage');
 let image;
 select.addEventListener('change', () => {
+    select.blur();
     if(image) {
         image.abort();
     }
     image = new ImageGrid(ctx, select.value);
-    image.generate();
-    select.blur();
+    image.generate(20);
 });
 
 const totalOptions = select.options.length;

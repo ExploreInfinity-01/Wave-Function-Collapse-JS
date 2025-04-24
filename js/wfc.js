@@ -19,20 +19,23 @@ export default class WaveFunctionCollapser {
 
         this.start = false;
         this.finished = false;
+        this.abort = false;
         this.showProgress = true;
 
         context.font = pixelSize * 0.5 + "px monospace";
     }
 
     regenerate() {
-        this.createGrid();
+        for(const gridCell of this.grid) {
+            gridCell.reset();
+        }
 
         this.history = [];
         this.currentHistory = null;
 
         this.start = false;
         this.finished = false;
-        this.showProgress = true;
+        this.abort = false;
 
         this.init();
     }
@@ -47,14 +50,13 @@ export default class WaveFunctionCollapser {
 
     createGrid() {
         const { rows, cols, pixelSize } = this;
-        this.grid = [];
+
         // Creating Grid cells
+        this.grid = [];
         let index = 0;
         for(let j = 0; j < rows; j++) {
             for(let i = 0; i < cols; i++) {
-                this.grid.push(
-                    new GridCell(this.imageGrid.tiles, i * pixelSize, j * pixelSize, pixelSize, index++)
-                );
+                this.grid.push(new GridCell(this.imageGrid.tiles, i * pixelSize, j * pixelSize, pixelSize, index++));
             }
         }
     }
@@ -63,7 +65,7 @@ export default class WaveFunctionCollapser {
         for(const cell of this.grid) {
             if(!cell.collapsed) {
                 cell.entropyChecked = false;
-                cell.calculateEntropy();
+                // cell.calculateEntropy();
             }
         }
 
@@ -73,11 +75,11 @@ export default class WaveFunctionCollapser {
             let minEntropy = Number.MAX_SAFE_INTEGER;
             for(const cell of this.grid) {
                 if( cell.collapsed || 
-                    minEntropy < cell.entropy) {
+                    minEntropy < cell.cellOptions.size) {
                     continue
                 }
-                if(minEntropy > cell.entropy) {
-                    minEntropy = cell.entropy;
+                if(minEntropy > cell.cellOptions.size) {
+                    minEntropy = cell.cellOptions.size;
                     leastEntropyCells.length = 0;
                     leastEntropyCells.push(cell);
                 } else leastEntropyCells.push(cell);
@@ -85,10 +87,12 @@ export default class WaveFunctionCollapser {
     
             if(leastEntropyCells.length === 0) {
                 console.timeEnd('Generation');
-                this.finished = true;
-                this.drawFinalImage();
                 console.log('Finished!');
-                return
+                this.finished = true;
+                if(this.showProgress) {
+                    this.drawFinalImage();
+                }
+                return;
             }
         } else this.start = true;
         
@@ -142,16 +146,21 @@ export default class WaveFunctionCollapser {
     }
 
     backtrack() {
-        do {
-            console.log('Backtrack...');
-            const {cell: lastCell, entropyCheckedCells} = this.currentHistory;
-            lastCell.collapsed = false;
-            lastCell.revertCellOptions();
-            for(const cellIndex of entropyCheckedCells) {
-                this.grid[cellIndex].revertCellOptions();
-            }
-            this.currentHistory = this.history.pop();
-        } while (this.isCellWithNoOptions());
+        try {
+            do {
+                console.log('Backtrack...');
+                const {cell: lastCell, entropyCheckedCells} = this.currentHistory;
+                lastCell.collapsed = false;
+                lastCell.revertCellOptions();
+                for(const cellIndex of entropyCheckedCells) {
+                    this.grid[cellIndex].revertCellOptions();
+                }
+                this.currentHistory = this.history.pop();
+            } while (this.isCellWithNoOptions());
+        }
+        catch(err) {
+            console.warn('Something horribly gone wrong! Refresh and tryAgain.', err);
+        }
     }
 
     reduceEntropy(cell, depth=0) {
@@ -173,7 +182,8 @@ export default class WaveFunctionCollapser {
                     try {
                         validOptions = validOptions.union(cell.options[tileIndex].adjacencies[dir]);
                     } catch (e) {
-                        console.log(cell.cellOptions);
+                        // console.log(cell.cellOptions);
+                        this.regenerate();
                     }
                 }
     
@@ -199,8 +209,10 @@ export default class WaveFunctionCollapser {
     }
 
     init() {
-        console.time('Generation');
-        this.animate();
+        requestIdleCallback(() => {
+            console.time('Generation');
+            this.animate();
+        }, { timeout: 50 });
     }
 
     drawFinalImage() {
@@ -216,19 +228,23 @@ export default class WaveFunctionCollapser {
     }
 
     animate() {
-        if(this.showProgress) {
-            for(const cell of this.grid) {
-                cell.draw(this.context);
+        if(!this.abort) {
+            if(this.showProgress) {
+                for(const cell of this.grid) {
+                    cell.draw(this.context);
+                }
             }
-        }
-        if(!this.finished) {
-            this.wfc();
-            requestAnimationFrame(() => this.animate());
-            // window.addEventListener('keydown', e => {
-            //     if(e.key === ' ') {
-            //         requestAnimationFrame(() => this.animate());
-            //     }
-            // }, { once: true, signal: this.controller.signal });
+            if(!this.finished) {
+                this.wfc();
+                requestAnimationFrame(() => this.animate());
+
+                // For Debugging
+                // window.addEventListener('keydown', e => {
+                //     if(e.key === ' ') {
+                //         requestAnimationFrame(() => this.animate());
+                //     }
+                // }, { once: true, signal: this.controller.signal });
+            }
         }
     }
 }

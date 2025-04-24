@@ -22,6 +22,6 @@ export function updateLoadingScreen(context, value='') {
     context.fillText('Loading...', centerX, centerY);
     if(value.length) {
         context.font = `20px monospace`;
-        context.fillText(`[${value}]`, centerX, centerY + 40);
+        context.fillText(value, centerX, centerY + 40);
     }
 }

@@ -1,3 +1,4 @@
+import { drawCellOptionsCount } from "../main.js";
 import { getBrightnessContrastingColor, rgba } from "./utils.js";
 
 const invLn2 = 1 / Math.log(2);
@@ -16,7 +17,17 @@ export default class GridCell {
         this.createEveryCellOptions();
 
         this.prevOptions = [];
-        this.showOptions = true;
+        this.showOptions = size >= 20;
+    }
+
+    reset() {
+        this.collapsed = false;
+        this.entropyChecked = false;
+        this.optionIndex = null;
+        this.drawn = false;
+        this.prevOptions = [];
+        this.prevOptionsSize = null;
+        this.createEveryCellOptions();
     }
 
     calculateEntropy() {
@@ -97,8 +108,7 @@ export default class GridCell {
             context.fillStyle = rgba(r, g, b, 255);
             context.fillRect(this.x, this.y, this.size, this.size);
 
-            if(this.showOptions) {
-                // context.fillStyle = 'red';
+            if(drawCellOptionsCount && this.showOptions) {
                 context.fillStyle = getBrightnessContrastingColor(r, g, b);
                 context.fillText(this.cellOptions.size, this.x + this.size * 0.5, this.y + this.size * 0.5);
             }

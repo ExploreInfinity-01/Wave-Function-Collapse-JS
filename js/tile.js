@@ -32,7 +32,6 @@ export default class Tile extends ImageData {
         context.save();
         context.fillStyle = 'black';
         context.font = '20px monospace';
-        console.log(x + this.width * 0.5, y + this.height * 1.5);
         context.fillText(index + 1, x + this.width * 0.5 * pixelSize, y + this.height * 1.25 * pixelSize);
         context.restore();
 

@@ -148,8 +148,11 @@ Image.prototype.extractTilesWorker = async function(context, size=3, event=new E
             // this.tiles = e.data.map((pixels, i) => new Tile(pixels, size, size, i, 1));
 
             this.tilesExtracted = true;
-            document.dispatchEvent(event);
-            resolve();
+            updateLoadingScreen(context, '[Creating WFC Grid]');
+            requestIdleCallback(() => {
+                document.dispatchEvent(event);
+                resolve();
+            }, { timeout: 50 });
         }
 
         worker.onerror = e => {
