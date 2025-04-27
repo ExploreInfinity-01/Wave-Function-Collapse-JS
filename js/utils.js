@@ -7,6 +7,10 @@ export function getBrightnessContrastingColor(r, g, b) {
     return luminance < 128 ? 'rgba(255, 255, 255, 1)' : 'rgba(0, 0, 0, 1)';
 }
 
+export function randInt(max, min=0) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
+
 export function random(array) {
     return array[Math.floor(Math.random() * array.length)]
 }

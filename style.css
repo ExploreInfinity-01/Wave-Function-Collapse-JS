@@ -57,3 +57,15 @@ select option {
     width: 25px;
     height: 25px;
 }
+
+#floatingWindow {
+    margin: 10px;
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 5px;
+    background-color: whitesmoke;
+}
+
+#imageViewer {
+    border: 1px solid black;
+}

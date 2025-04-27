@@ -10,9 +10,9 @@ fs.readdir(folderPath, (err, files) => {
     return;
   }
 
-  const fileMap = []; 
+  const fileMap = new Map(); 
   for(const file of files) {
-    fileMap.push({ name: file.replace('.png', ''), fileName: file });
+    fileMap.set(file.replace('.png', ''), { src: file });
   }
-  console.log(fileMap);
+  console.log(fileMap.entries());
 });

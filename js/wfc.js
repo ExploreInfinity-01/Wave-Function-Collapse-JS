@@ -23,9 +23,20 @@ export default class WaveFunctionCollapser {
         this.showProgress = true;
 
         context.font = pixelSize * 0.5 + "px monospace";
+        console.groupCollapsed('Generations');
     }
 
     regenerate() {
+        if(this.start && !this.finished) {
+            console.timeEnd('Generation');
+            console.log('Cancelled!');
+        }
+
+        this.reset();
+        this.init();
+    }
+
+    reset() {
         for(const gridCell of this.grid) {
             gridCell.reset();
         }
@@ -36,8 +47,6 @@ export default class WaveFunctionCollapser {
         this.start = false;
         this.finished = false;
         this.abort = false;
-
-        this.init();
     }
 
     createNewHistoryObj(cell) {
@@ -49,6 +58,7 @@ export default class WaveFunctionCollapser {
     }
 
     createGrid() {
+        console.time('Grid');
         const { rows, cols, pixelSize } = this;
 
         // Creating Grid cells
@@ -59,13 +69,14 @@ export default class WaveFunctionCollapser {
                 this.grid.push(new GridCell(this.imageGrid.tiles, i * pixelSize, j * pixelSize, pixelSize, index++));
             }
         }
+        console.timeEnd('Grid');
     }
 
     wfc() {
         for(const cell of this.grid) {
             if(!cell.collapsed) {
                 cell.entropyChecked = false;
-                // cell.calculateEntropy();
+                cell.calculateEntropy();
             }
         }
 
@@ -75,11 +86,11 @@ export default class WaveFunctionCollapser {
             let minEntropy = Number.MAX_SAFE_INTEGER;
             for(const cell of this.grid) {
                 if( cell.collapsed || 
-                    minEntropy < cell.cellOptions.size) {
+                    minEntropy < cell.entropy) {
                     continue
                 }
-                if(minEntropy > cell.cellOptions.size) {
-                    minEntropy = cell.cellOptions.size;
+                if(minEntropy > cell.entropy) {
+                    minEntropy = cell.entropy;
                     leastEntropyCells.length = 0;
                     leastEntropyCells.push(cell);
                 } else leastEntropyCells.push(cell);
@@ -100,24 +111,8 @@ export default class WaveFunctionCollapser {
         const randomCell = random(leastEntropyCells);
         this.createNewHistoryObj(randomCell);
         randomCell.collapsed = true;
+        randomCell.selectRandomOption();
 
-        const randomCellOption = random([...randomCell.cellOptions]);
-
-        // Tried when unique tiles, frequency also gives more weightage to random selection [Failed]
-        // let randomCellOption;
-        // const randNum = Math.floor(Math.random() * randomCell.totalFrequency);
-        // let cumulativeFrequency = 0;
-        // for(const cellOption of randomCell.cellOptions) {
-        //     cumulativeFrequency += this.imageGrid.tiles[cellOption].frequency;
-        //     if(cumulativeFrequency > randNum) {
-        //         randomCellOption = cellOption;
-        //         break
-        //     }
-        // }
-        
-        randomCell.optionIndex = randomCellOption;
-        randomCell.setNewOptions(new Set([randomCellOption]));
-        
         this.reduceEntropy(randomCell);
 
         // Back Tracking
@@ -125,6 +120,7 @@ export default class WaveFunctionCollapser {
             this.backtrack();
             return
         }
+
         // Collapse Cell with one option left
         for(const cellIndex of this.currentHistory.entropyCheckedCells) {
             const cell = this.grid[cellIndex];
@@ -138,8 +134,8 @@ export default class WaveFunctionCollapser {
 
     isCellWithNoOptions() {
         for(const cell of this.grid) {
-            if(cell.cellOptions.size === 0) {
-                return cell
+            if(!cell.cellOptions.size) {
+                return true
             }
         }
         return false
@@ -148,9 +144,8 @@ export default class WaveFunctionCollapser {
     backtrack() {
         try {
             do {
-                console.log('Backtrack...');
+                // console.log('Backtrack...');
                 const {cell: lastCell, entropyCheckedCells} = this.currentHistory;
-                lastCell.collapsed = false;
                 lastCell.revertCellOptions();
                 for(const cellIndex of entropyCheckedCells) {
                     this.grid[cellIndex].revertCellOptions();
@@ -159,7 +154,8 @@ export default class WaveFunctionCollapser {
             } while (this.isCellWithNoOptions());
         }
         catch(err) {
-            console.warn('Something horribly gone wrong! Refresh and tryAgain.', err);
+            console.warn('Generation Messed Up! Trying Again...', err);
+            this.reset();
         }
     }
 
@@ -179,24 +175,25 @@ export default class WaveFunctionCollapser {
             if(!neighborCell.collapsed) {
                 let validOptions = new Set();
                 for(const tileIndex of cell.cellOptions) {
-                    try {
-                        validOptions = validOptions.union(cell.options[tileIndex].adjacencies[dir]);
-                    } catch (e) {
-                        // console.log(cell.cellOptions);
-                        this.regenerate();
-                    }
+                    validOptions = validOptions.union(cell.options[tileIndex].adjacencies[dir]);
                 }
     
                 const newOptions = neighborCell.cellOptions.intersection(validOptions);
                 if(neighborCell.cellOptions.size === newOptions.size) {
                     return
                 }
-                if(!neighborCell.entropyChecked) {
-                    neighborCell.setNewOptions(newOptions);
-                    neighborCell.entropyChecked = true;
-                    this.currentHistory.entropyCheckedCells.add(neighborCell.index);
-                } else {
-                    neighborCell.cellOptions = newOptions;
+                try {
+                    if(!neighborCell.entropyChecked) {
+                        neighborCell.setNewOptions(newOptions);
+                        neighborCell.entropyChecked = true;
+                        this.currentHistory.entropyCheckedCells.add(neighborCell.index);
+                    } else {
+                        neighborCell.cellOptions = newOptions;
+                    }
+                }
+                catch(err) {
+                    console.error(this.currentHistory);
+                    this.regenerate();
                 }
                 this.reduceEntropy(neighborCell, depth+1);
             }
@@ -224,6 +221,7 @@ export default class WaveFunctionCollapser {
     refreshImage() {
         for(const cell of this.grid) {
             cell.drawn = false;
+            this.prevOptionsSize = null;
         }
     }
 

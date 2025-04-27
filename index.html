@@ -12,6 +12,9 @@
         <select name="selectImage" id="selectImage"></select>
         <div id="main">
             <canvas id="canvas"></canvas>
+            <div id="floatingWindow" style="display: none;">
+                <canvas id="tileCanvas"></canvas>
+            </div>
             <div id="controls">
                 <button id="changeView" title="Change View">◩</button>
                 <button id="regenerate" title="Regenerate">
@@ -23,6 +26,7 @@
             </div>
         </div>
     </div>
+
 
     <script type="module" src="main.js"></script>
 </body>

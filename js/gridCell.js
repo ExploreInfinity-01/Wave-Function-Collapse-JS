@@ -1,5 +1,5 @@
 import { drawCellOptionsCount } from "../main.js";
-import { getBrightnessContrastingColor, rgba } from "./utils.js";
+import { getBrightnessContrastingColor, randInt, random, rgba } from "./utils.js";
 
 const invLn2 = 1 / Math.log(2);
 export default class GridCell {
@@ -27,11 +27,14 @@ export default class GridCell {
         this.drawn = false;
         this.prevOptions = [];
         this.prevOptionsSize = null;
+        this.prevNumberOfOptions = null;
         this.createEveryCellOptions();
     }
 
     calculateEntropy() {
-        if(this.prevNumberOfOptions === this.cellOptions.size) return;
+        if(this.prevNumberOfOptions === this.cellOptions.size) {
+            return;
+        }
         this.prevNumberOfOptions = this.cellOptions.size;
 
         this.totalFrequency = 0;
@@ -41,9 +44,25 @@ export default class GridCell {
 
         this.entropy = 0;
         for(const optionIndex of this.cellOptions) {
-            const { frequency } = this.options[optionIndex];
-            const probability = frequency / this.totalFrequency;
+            const probability = this.options[optionIndex].frequency / this.totalFrequency;
             this.entropy -= probability * Math.log(probability) * invLn2;
+        }
+    }
+
+    selectRandomOption() {
+        // const randNum = randInt(this.totalFrequency);
+        // let cumulativeFrequency = 0;
+        // for(const optionIndex of this.cellOptions) {
+        //     cumulativeFrequency += this.options[optionIndex].frequency;
+        //     if(cumulativeFrequency >= randNum) {
+        //         this.optionIndex = optionIndex;
+        //         this.setNewOptions(new Set([optionIndex]));
+        //     }
+        // }
+        const randomOption = random([...this.cellOptions]); 
+        if(randomOption >= 0) {
+            this.optionIndex = randomOption;
+            this.setNewOptions(new Set([randomOption]));
         }
     }
 
@@ -55,10 +74,10 @@ export default class GridCell {
     revertCellOptions() {
         if(this.prevOptions.length > 0) {
             this.cellOptions = this.prevOptions.pop();
-            if(typeof(this.optionIndex) === 'number') {
+            if(this.collapsed) {
                 this.cellOptions.delete(this.optionIndex);
-                this.collapsed = false;
                 this.optionIndex = null;
+                this.collapsed = false;
             }
         }
     }
@@ -99,6 +118,7 @@ export default class GridCell {
                     b += optionColor.b;
                 } catch (error) {
                     // console.log(optionIndex, this.cellOptions);
+                    return
                 }
             }
             r /= this.cellOptions.size;

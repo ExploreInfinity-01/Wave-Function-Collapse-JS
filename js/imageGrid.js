@@ -2,23 +2,40 @@ import { updateLoadingScreen } from './utils.js';
 import WaveFunctionCollapser from './wfc.js';
 
 export default class ImageGrid {
-    constructor(context, src, tileSize=3) {
+    constructor(context, src, label, tileSize=3) {
         this.canvas = context.canvas;
         this.context = context;
         this.tileSize = tileSize;
         this.image = new Image();
         this.image.src = src;
+        this.label = label;
 
-        updateLoadingScreen(context);
+        this.tileCanvas = document.getElementById('tileCanvas');
+        this.tileContext = this.tileCanvas.getContext('2d');
+        this.clearTileCanvas = () => {
+            this.tileContext.clearRect(0, 0, this.tileCanvas.width, this.tileCanvas.height);
+        };
 
-        this.#addOptions();
+        this.floatingWindow = document.getElementById('floatingWindow');
+        this.showFloatingWindow = () => {
+            this.canvas.style.display = 'none';
+            floatingWindow.style.display = 'block';
+        }
+        this.hideFloatingWindow = () => {
+            this.canvas.style.display = 'block';
+            floatingWindow.style.display = 'none';
+        }
+
+        this.load();
 
         // Tile Extraction
         this.image.onload = async () => {
             await this.image.extractTilesWorker(context, tileSize);
             
             // Tiles Extracted
+            console.time('Adjacancies');
             this.createTileAdjacencies();
+            console.timeEnd('Adjacancies');
             this.tiles = this.image.tiles;
             this.extracted = true;
             document.dispatchEvent(new Event('tilesOnLoad'));
@@ -27,7 +44,13 @@ export default class ImageGrid {
         this.showTiles = false;
     }
 
-    #addOptions() {
+    load() {
+        console.group(this.label);
+        updateLoadingScreen(this.context);
+        this.addOptions();
+    }
+
+    addOptions() {
         const { context } = this;
         const { width, height } = this.canvas;
 
@@ -35,20 +58,25 @@ export default class ImageGrid {
         this.controller = controller;
         this.abort = () => {
             this.controller.abort();
-            this.wfc.abort = true;
+            this.hideFloatingWindow();
+            if(!this.wfc.finished) {
+                this.wfc.abort = true;
+                console.timeEnd('Generation');
+                console.log('Cancelled!');
+            }
+            console.groupEnd();
+            console.groupEnd();
         }
 
-        let currentView = 0;
-        const totalViews = 4;
-        const changeView = document.getElementById('changeView');
-        changeView.addEventListener('click', () => {
-            changeView.blur();
-            context.clearRect(0, 0, width, height);
-
+        const changeView = () => {
             currentView = (currentView + 1) % totalViews;
+
+            context.clearRect(0, 0, width, height);
+            this.clearTileCanvas();
 
             switch(currentView) {
                 case 0: // Generated Image
+                    this.hideFloatingWindow();
                     this.wfc.showProgress = true;
                     this.wfc.finished
                         ? this.wfc.drawFinalImage()
@@ -66,32 +94,50 @@ export default class ImageGrid {
                     this.showExtractedTiles();
                     break;
                 case 3: // Every Tile with their Adjacencies
+                    this.showFloatingWindow();
                     this.showTileAdjacencies(index);
                     break;
             }
+        }
+
+        let currentView = 0;
+        const totalViews = 4;
+        const changeViewBtn = document.getElementById('changeView');
+        changeViewBtn.addEventListener('click', () => {
+            changeViewBtn.blur();
+            changeView();
         }, controller);
 
         const regenerateBtn = document.getElementById('regenerate');
         regenerateBtn.addEventListener('click', () => this.wfc.regenerate(), controller);
 
+        // Tile Adjacencies Key Handler
         let index = 0;
-        const createAdjacenciesViewport = () => {
-            window.addEventListener('keydown', e => {
-                if(currentView !== 3) return;
-                if(e.key === 'ArrowRight' && index < this.tiles.length - 1) {
-                    index++;
-                } else if(e.key === 'ArrowLeft' && index > 0) {
-                    index--;
-                } else if(e.key === 'ArrowUp') {
+        window.addEventListener('keydown', e => {
+            if(currentView !== 3) return;
+
+            switch(e.key) {
+                case 'ArrowRight':
+                    if(index < this.tiles.length - 1) index++;
+                    break;
+                case 'ArrowLeft':
+                    if(index > 0) index--;
+                    break;
+                case 'ArrowUp':
                     index = 0;
-                } else if(e.key === 'ArrowDown') {
+                    break;
+                case 'ArrowDown':
                     index = this.tiles.length - 1;
-                }
-                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.showTileAdjacencies(index);
-            }, controller);
-        }
-        createAdjacenciesViewport();
+                    break;
+            }
+
+            this.clearTileCanvas();
+            this.showTileAdjacencies(index);
+        }, controller);
+        window.addEventListener('resize', () => {
+            this.clearTileCanvas();
+            this.showTileAdjacencies(index)
+        });
     }
 
     generate(pixelSize=25) {
@@ -119,22 +165,13 @@ export default class ImageGrid {
         this.padding = value;
     }
 
-    showTileAdjacencies(index, tileSize=75, padding=10) {
-        this.tiles[index].showAdjacencies(this.context, index, this.tiles, tileSize, padding);
+    showTileAdjacencies(index, {tileSize=75, padding=10}={}) {
+        this.tiles[index].showAdjacencies(this.tileContext, index, this.tiles, tileSize, padding);
     }
 
     createTileAdjacencies() {
         for(const tile of this.image.tiles) {
             tile.getAdjacentTiles(this.image.tiles);
         }
-    }
-
-    animate() {
-        const { canvas, context } = this;
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        if(this.showTiles) {
-            this.image.drawTileGrid(context, 0, 0, canvas.width, this.padding);
-        }
-        requestAnimationFrame(() => this.animate());
     }
 }

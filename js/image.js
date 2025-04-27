@@ -95,89 +95,58 @@ Image.prototype.extractTiles = function(size=3) {
     this.tilesExtracted = true;
 }
 
-Image.prototype.extractTilesWorker = async function(context, size=3, event=new Event('tileExtracted')) {
+Image.prototype.extractTilesWorker = async function(context, size=3) {
     if(!this.pixelLoaded) this.loadPixels();
     this.tileSize = size;
 
+    console.time('Tiles');
     const workerPromise = new Promise((resolve, reject) => {
-        const worker = new Worker('./js/worker.js');
+        const worker = new Worker('./js/worker.js', { type: 'module' });
 
         worker.onmessage = e => {
-            // Slow... [400-600ms] for 16x20 Img
-            // this.tiles = e.data.map(pixels => {
-                // const img = new Image(size, size);
-                // img.pixels = pixels;
-                // img.updatePixels();
-                // return img
-            // });
+            worker.terminate();
 
-            // Fast [10-20ms] for 16x20 Img
-            // this.tiles = e.data.map(pixels => new ImageData(pixels, size, size));
+            const { tiles, frequencyMap } = e.data;
 
-            // Unique Tiles
-            // const excludeTiles = new Set();
-            // this.tiles = [];
-            // let index = 0;
-            // for(const pixels of e.data) {
-            //     if(excludeTiles.has(pixels)) continue;
-            //     let frequency = 0;
-            //     for(const tilePixels of e.data) {
-            //         if(tilePixels.join('') === pixels.join('')) {
-            //             excludeTiles.add(tilePixels);
-            //             frequency++;
-            //         }
-            //     }
-            //     this.tiles.push(new Tile(pixels, size, size, index++, frequency));
-            // };
+            this.extractedTiles = tiles.map(t => new ImageData(t, size, size));
 
-            // Repeat Indexes
-            const checkedTiles = new Map();
             this.tiles = [];
             let index = 0;
-            for(const pixels of e.data) {
-                const key = pixels.join('');
-                this.tiles.push(
-                    new Tile(pixels, size, size, 
-                        checkedTiles.has(key) ?  checkedTiles.get(key) : index));
-                
-                checkedTiles.has(key)
-                    ? index++ 
-                    : checkedTiles.set(key, index++);
-            };
+            for(const [key, frequency] of frequencyMap.entries()) {
+                const pixels = Uint8ClampedArray.from(key.split(',').map(Number));
+                this.tiles.push(new Tile(pixels, size, size, index++, frequency));
+            }
 
-            // this.tiles = e.data.map((pixels, i) => new Tile(pixels, size, size, i, 1));
-
+            console.timeEnd('Tiles');
             this.tilesExtracted = true;
             updateLoadingScreen(context, '[Creating WFC Grid]');
-            requestIdleCallback(() => {
-                document.dispatchEvent(event);
-                resolve();
-            }, { timeout: 50 });
+
+            requestIdleCallback(() => resolve(), { timeout: 50 });
         }
 
         worker.onerror = e => {
+            worker.terminate();
             console.error(e);
             reject(e);
         }
 
         const { pixels, width, height } = this;
-        worker.postMessage({ pixels, size, width, height });
+        worker.postMessage({ pixels, size, width, height, rotate: false, flip: false });
     });
 
     await Promise.all([workerPromise]);
-    // return workerPromise
 }
 
 Image.prototype.drawTileGrid = function(context, dx, dy, gridSize, padding=10) {
     if(!this.tilesExtracted) {
-        console.error('Tiles not extracted');
+        console.error('Tiles not extracted!');
         return
     }
     const { width: imgWidth, tileSize } = this;
     const pixelScale = (gridSize - (imgWidth + 1) * padding) / (imgWidth * tileSize);
     const ds = tileSize * pixelScale + padding;
-    for(let i = 0; i < this.tiles.length; i++) {
-        let tile = this.tiles[i];
+    for(let i = 0; i < this.extractedTiles.length; i++) {
+        const tile = this.extractedTiles[i];
         const x = dx + padding + (i % imgWidth) * ds;
         const y = dy + padding + Math.floor(i / imgWidth) * ds;
         tile.renderImage(context, x, y, pixelScale);

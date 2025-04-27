@@ -35,16 +35,20 @@ export default class Tile extends ImageData {
         context.fillText(index + 1, x + this.width * 0.5 * pixelSize, y + this.height * 1.25 * pixelSize);
         context.restore();
 
+        const columnPadding = padding * 2;
         for(const tileColumn of this.adjacencies) {
-            x += tileSize + padding * 2;
-            y = padding * 2;
+            x += tileSize + columnPadding;
+            y = columnPadding;
             const rectX = x - padding;
+
+            let index = 0;
+            const tileCount = tileColumn.size;
             for(const tileIndex of tileColumn) {
                 tiles[tileIndex].renderImage(context, x, y, pixelSize);
                 y += tileSize + padding;
-                if(y + (tileSize + padding * 2) >= canvas.height) {
+                if( index++ < tileCount - 1 && y + (tileSize + columnPadding) >= canvas.height) {
                     x += tileSize + padding;
-                    y = padding * 2;
+                    y = columnPadding;
                 }
             }
             // Section Ouline
@@ -54,16 +58,11 @@ export default class Tile extends ImageData {
 
     getAdjacentTiles(tiles) {
         for(const tile of tiles) {
-            if(tile === this) continue;
-            for(const key of Object.keys(dir)) {
-                if(this.checkTileOverlapping(tile, key)) {
-                    this.adjacencies[dir[key]].add(tile.index);
-                }
-            }
+            this.checkTileOverlapping(tile);
         }
     }
 
-    checkTileOverlapping(tile, dirKey) {
+    checkTileOverlapping(tile) {
         const configValues = {
             "TOP": { loopValues : { i: [0, 0], j: [0, -1] } , offset: { i: 0, j: 1 } },
             "LEFT": { loopValues : { i: [0, -1], j: [0, 0] } , offset: { i: 1, j: 0 } },
@@ -71,28 +70,30 @@ export default class Tile extends ImageData {
             "BOTTOM": { loopValues : { i: [0, 0], j: [1, 0] } , offset: { i: 0, j: -1 } }
         }
 
-        const config = configValues[dirKey];
-        const configLoop = config.loopValues;
-        for(let i = configLoop.i[0]; i < this.width + configLoop.i[1]; i++) {
-            for(let j = configLoop.j[0]; j < this.height + configLoop.j[1]; j++) {
-                const indexA = (i + j * this.width) * 4;
-                const rA = this.data[indexA];
-                const gA = this.data[indexA + 1];
-                const bA = this.data[indexA + 2];
-                const aA = this.data[indexA + 3];
-
-                const indexB = ((i + config.offset.i) + (j + config.offset.j) * tile.width) * 4;
-                const rB = tile.data[indexB];
-                const gB = tile.data[indexB + 1];
-                const bB = tile.data[indexB + 2];
-                const aB = tile.data[indexB + 3];
-
-                if(rA !== rB || gA !== gB || bA !== bB || aA !== aB) {
-                    return false
+        const checkOverlap = (tile, dirKey) => {
+            const { width, height } = this;
+            const { loopValues, offset } = configValues[dirKey];
+            for(let j = loopValues.j[0]; j < height + loopValues.j[1]; j++) {
+                const rowOffsetA = j * width;
+                const rowOffsetB = (j + offset.j) * width;
+                for(let i = loopValues.i[0]; i < width + loopValues.i[1]; i++) {
+                    const indexA = (i + rowOffsetA) * 4;
+                    const indexB = ((i + offset.i) + rowOffsetB) * 4;
+    
+                    if( this.data[indexA]     !== tile.data[indexB]     || // r
+                        this.data[indexA + 1] !== tile.data[indexB + 1] || // b
+                        this.data[indexA + 2] !== tile.data[indexB + 2]    // g
+                    ) {
+                        return false
+                    }
                 }
             }
+            return true
         }
-
-        return true
+        for(const dirKey of Object.keys(configValues)) {
+            if(checkOverlap(tile, dirKey)) {
+                this.adjacencies[dir[dirKey]].add(tile.index);
+            }
+        }
     }
 }

@@ -1,70 +1,103 @@
 const select = document.getElementById('selectImage');
 select.innerHTML = '';
 
-const options = [
-    { name: '3Bricks', fileName: '3Bricks.png' },
-    { name: 'Angular', fileName: 'Angular.png' },
-    { name: 'BrownFox', fileName: 'BrownFox.png' },
-    { name: 'Cat', fileName: 'Cat.png' },
-    { name: 'Cats', fileName: 'Cats.png' },
-    { name: 'Cave', fileName: 'Cave.png' },
-    { name: 'Chess', fileName: 'Chess.png' },
-    { name: 'Circle', fileName: 'Circle.png' },
-    { name: 'City', fileName: 'City.png' },
-    { name: 'ColoredCity', fileName: 'ColoredCity.png' },
-    { name: 'Disk', fileName: 'Disk.png' },
-    { name: 'Dungeon', fileName: 'Dungeon.png' },
-    { name: 'Fabric', fileName: 'Fabric.png' },
-    { name: 'Flowers', fileName: 'Flowers.png' },
-    { name: 'Font', fileName: 'Font.png' },
-    { name: 'Forest', fileName: 'Forest.png' },
-    { name: 'Hogs', fileName: 'Hogs.png' },
-    { name: 'Knot', fileName: 'Knot.png' },
-    { name: 'Lake', fileName: 'Lake.png' },
-    { name: 'LessRooms', fileName: 'LessRooms.png' },
-    { name: 'Lines', fileName: 'Lines.png' },
-    { name: 'Link', fileName: 'Link.png' },
-    { name: 'Link2', fileName: 'Link2.png' },
-    { name: 'MagicOffice', fileName: 'MagicOffice.png' },
-    { name: 'Maze', fileName: 'Maze.png' },
-    { name: 'Mazelike', fileName: 'Mazelike.png' },
-    { name: 'MoreFlowers', fileName: 'MoreFlowers.png' },
-    { name: 'Mountains', fileName: 'Mountains.png' },
-    { name: 'Nested', fileName: 'Nested.png' },
-    { name: 'NotKnot', fileName: 'NotKnot.png' },
-    { name: 'Office', fileName: 'Office.png' },
-    { name: 'Office2', fileName: 'Office2.png' },
-    { name: 'Paths', fileName: 'Paths.png' },
-    { name: 'Platformer', fileName: 'Platformer.png' },
-    { name: 'Qud', fileName: 'Qud.png' },
-    { name: 'RedDot', fileName: 'RedDot.png' },
-    { name: 'RedMaze', fileName: 'RedMaze.png' },
-    { name: 'Rooms', fileName: 'Rooms.png' },
-    { name: 'Rule126', fileName: 'Rule126.png' },
-    { name: 'Sand', fileName: 'Sand.png' },
-    { name: 'ScaledMaze', fileName: 'ScaledMaze.png' },
-    { name: 'Sewers', fileName: 'Sewers.png' },
-    { name: 'SimpleKnot', fileName: 'SimpleKnot.png' },
-    { name: 'SimpleMaze', fileName: 'SimpleMaze.png' },
-    { name: 'SimpleWall', fileName: 'SimpleWall.png' },
-    { name: 'Skew1', fileName: 'Skew1.png' },
-    { name: 'Skew2', fileName: 'Skew2.png' },
-    { name: 'Skyline', fileName: 'Skyline.png' },
-    { name: 'Skyline2', fileName: 'Skyline2.png' },
-    { name: 'SmileCity', fileName: 'SmileCity.png' },
-    { name: 'Spirals', fileName: 'Spirals.png' },
-    { name: 'Town', fileName: 'Town.png' },
-    { name: 'TrickKnot', fileName: 'TrickKnot.png' },
-    { name: 'Village', fileName: 'Village.png' },
-    { name: 'Wall', fileName: 'Wall.png' },
-    { name: 'WalledDot', fileName: 'WalledDot.png' },
-    { name: 'Water', fileName: 'Water.png' },
-    { name: 'Wrinkles', fileName: 'Wrinkles.png' }
-];
+export const options = new Map([
+    [ '3Bricks', { src: 'samples/3Bricks.png' } ],
+    [ 'Angular', { src: 'samples/Angular.png' } ],
+    [ 'BrownFox', { src: 'samples/BrownFox.png' } ],
+    [ 'Cat', { src: 'samples/Cat.png' } ],
+    [ 'Cats', { src: 'samples/Cats.png' } ],
+    [ 'Cave', { src: 'samples/Cave.png' } ],
+    [ 'Chess', { src: 'samples/Chess.png' } ],
+    [ 'Circle', { src: 'samples/Circle.png' } ],
+    [ 'City', { src: 'samples/City.png' } ],
+    [ 'ColoredCity', { src: 'samples/ColoredCity.png' } ],
+    [ 'Disk', { src: 'samples/Disk.png' } ],
+    [ 'Dungeon', { src: 'samples/Dungeon.png' } ],
+    [ 'Fabric', { src: 'samples/Fabric.png' } ],
+    [ 'Flowers', { src: 'samples/Flowers.png' } ],
+    [ 'Font', { src: 'samples/Font.png' } ],
+    [ 'Forest', { src: 'samples/Forest.png' } ],
+    [ 'Hogs', { src: 'samples/Hogs.png' } ],
+    [ 'Knot', { src: 'samples/Knot.png' } ],
+    [ 'Lake', { src: 'samples/Lake.png' } ],
+    [ 'LessRooms', { src: 'samples/LessRooms.png' } ],
+    [ 'Lines', { src: 'samples/Lines.png' } ],
+    [ 'Link', { src: 'samples/Link.png' } ],
+    [ 'Link2', { src: 'samples/Link2.png' } ],
+    [ 'MagicOffice', { src: 'samples/MagicOffice.png' } ],
+    [ 'Maze', { src: 'samples/Maze.png' } ],
+    [ 'Mazelike', { src: 'samples/Mazelike.png' } ],
+    [ 'MoreFlowers', { src: 'samples/MoreFlowers.png' } ],
+    [ 'Mountains', { src: 'samples/Mountains.png' } ],
+    [ 'Nested', { src: 'samples/Nested.png' } ],
+    [ 'NotKnot', { src: 'samples/NotKnot.png' } ],
+    [ 'Office', { src: 'samples/Office.png' } ],
+    [ 'Office2', { src: 'samples/Office2.png' } ],
+    [ 'Paths', { src: 'samples/Paths.png' } ],
+    [ 'Platformer', { src: 'samples/Platformer.png' } ],
+    [ 'Qud', { src: 'samples/Qud.png' } ],
+    [ 'RedDot', { src: 'samples/RedDot.png' } ],
+    [ 'RedMaze', { src: 'samples/RedMaze.png' } ],
+    [ 'Rooms', { src: 'samples/Rooms.png' } ],
+    [ 'Rule126', { src: 'samples/Rule126.png' } ],
+    [ 'Sand', { src: 'samples/Sand.png' } ],
+    [ 'ScaledMaze', { src: 'samples/ScaledMaze.png' } ],
+    [ 'Sewers', { src: 'samples/Sewers.png' } ],
+    [ 'SimpleKnot', { src: 'samples/SimpleKnot.png' } ],
+    [ 'SimpleMaze', { src: 'samples/SimpleMaze.png' } ],
+    [ 'SimpleWall', { src: 'samples/SimpleWall.png' } ],
+    [ 'Skew1', { src: 'samples/Skew1.png' } ],
+    [ 'Skew2', { src: 'samples/Skew2.png' } ],
+    [ 'Skyline', { src: 'samples/Skyline.png' } ],
+    [ 'Skyline2', { src: 'samples/Skyline2.png' } ],
+    [ 'SmileCity', { src: 'samples/SmileCity.png' } ],
+    [ 'Spirals', { src: 'samples/Spirals.png' } ],
+    [ 'Town', { src: 'samples/Town.png' } ],
+    [ 'TrickKnot', { src: 'samples/TrickKnot.png' } ],
+    [ 'Village', { src: 'samples/Village.png' } ],
+    [ 'Wall', { src: 'samples/Wall.png' } ],
+    [ 'WalledDot', { src: 'samples/WalledDot.png' } ],
+    [ 'Water', { src: 'samples/Water.png' } ],
+    [ 'Wrinkles', { src: 'samples/Wrinkles.png' } ]
+]);
 
-for(const { name, fileName } of options) {
+// Drag And Drop File Functionality
+document.addEventListener('dragenter', e => e.preventDefault(), false);
+document.addEventListener('drag', e => e.preventDefault(), false);
+document.addEventListener('drop', e => e.preventDefault(), false);
+document.addEventListener('dragover', e => e.preventDefault(), false);
+
+document.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    
+    for(const file of files) {
+        if(file.type.startsWith('image/')) {
+            const { name } = file;
+            const fileReader = new FileReader();
+
+            fileReader.onload = () => {
+                const fileName = name.substring(0, name.lastIndexOf('.'));
+                options.set(fileName, { src: fileReader.result });
+                addOption(fileName);
+            }
+
+            fileReader.readAsDataURL(file);
+        }
+    }
+}, false);
+
+function addOption(name) {
     const option = document.createElement('option');
     option.textContent = name;
-    option.value = location.pathname + `samples/${fileName}`;
+    option.value = name;
     select.append(option);
+}
+
+for(const [ name ] of options.entries()) {
+    addOption(name);
+}
+
+export function createPath(src) {
+    return location.pathname + src;
 }
