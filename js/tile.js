@@ -35,12 +35,18 @@ export default class Tile extends ImageData {
         context.fillText(index + 1, x + this.width * 0.5 * pixelSize, y + this.height * 1.25 * pixelSize);
         context.restore();
 
+        x += padding;
         const columnPadding = padding * 2;
-        for(const tileColumn of this.adjacencies) {
-            x += tileSize + columnPadding;
+        for(let i = 0; i < this.adjacencies.length; i++) {
+            const tileColumn = this.adjacencies[i];
+            // New Section Starts
+            x += tileSize + padding;
             y = columnPadding;
-            const rectX = x - padding;
 
+            const rectX = x;
+            x += padding;
+
+            // Tiles
             let index = 0;
             const tileCount = tileColumn.size;
             for(const tileIndex of tileColumn) {

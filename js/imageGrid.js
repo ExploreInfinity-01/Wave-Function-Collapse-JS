@@ -40,8 +40,6 @@ export default class ImageGrid {
             this.extracted = true;
             document.dispatchEvent(new Event('tilesOnLoad'));
         };
-        this.padding = 10;
-        this.showTiles = false;
     }
 
     load() {
@@ -90,11 +88,10 @@ export default class ImageGrid {
                     this.image.renderImage(context, 0, 0, pixelScale);
                     break;
                 case 2: // Tiles extracted from Image
-                    this.setPadding(5);
+                    this.showFloatingWindow();
                     this.showExtractedTiles();
                     break;
                 case 3: // Every Tile with their Adjacencies
-                    this.showFloatingWindow();
                     this.showTileAdjacencies(index);
                     break;
             }
@@ -135,8 +132,8 @@ export default class ImageGrid {
             this.showTileAdjacencies(index);
         }, controller);
         window.addEventListener('resize', () => {
-            this.clearTileCanvas();
-            this.showTileAdjacencies(index)
+            currentView--;
+            changeView();
         });
     }
 
@@ -156,13 +153,13 @@ export default class ImageGrid {
         this.wfc.init();
     }
 
-    showExtractedTiles() {
-        this.showTiles = true;
-        this.image.drawTileGrid(this.context, 0, 0, this.canvas.width, this.padding);
-    }
-
-    setPadding(value) {
-        this.padding = value;
+    showExtractedTiles(padding=5) {
+        const { width, height } = this.tileCanvas;
+        const aspectRatio = this.image.width / this.image.height;
+        const gridSize = height * aspectRatio;
+        const dx = (width - gridSize) * 0.5;
+        const newPadding = 5 + padding * dx / (width * 0.5);
+        this.image.drawTileGrid(this.tileContext, dx, 0, gridSize, newPadding);
     }
 
     showTileAdjacencies(index, {tileSize=75, padding=10}={}) {
