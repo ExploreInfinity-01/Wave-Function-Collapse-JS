@@ -16,14 +16,17 @@ export default class ImageGrid {
             this.tileContext.clearRect(0, 0, this.tileCanvas.width, this.tileCanvas.height);
         };
 
+        this.activeCanvas = this.canvas;
         this.floatingWindow = document.getElementById('floatingWindow');
         this.showFloatingWindow = () => {
             this.canvas.style.display = 'none';
             floatingWindow.style.display = 'block';
+            this.activeCanvas = this.tileCanvas;
         }
         this.hideFloatingWindow = () => {
             this.canvas.style.display = 'block';
             floatingWindow.style.display = 'none';
+            this.activeCanvas = this.canvas;
         }
 
         this.load();

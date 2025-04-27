@@ -48,11 +48,20 @@ select.dispatchEvent(new Event('change'));
 
 const saveBtn = document.getElementById('save');
 saveBtn.addEventListener('click', () => {
-    if(image.wfc.finished) {
-        const a = document.createElement('a');
-        const fileName = select.value;
-        a.download = fileName.substring(fileName.indexOf('/', 2) + 1);
-        a.href = canvas.toDataURL();
-        a.click();
-    }
+    const { activeCanvas } =  lastOption.imageGrid;
+    const { width, height } = activeCanvas;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(activeCanvas, 0, 0);
+
+    const a = document.createElement('a');
+    const fileName = select.value;
+    a.download = fileName.substring(fileName.indexOf('/', 2) + 1);
+    a.href = canvas.toDataURL();
+    a.click();
 });
